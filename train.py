@@ -26,7 +26,7 @@ def main(args):
     with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     if args.env_name in all_envs:
-        config.update({"env-name":args.env_name+"-v0", "env-kwargs":{}, "fast-batch-size":16, "num-batches":2000, "meta-batch-size":1})
+        config.update({"env-name":args.env_name+"-v0", "env-kwargs":{}, "fast-batch-size":16, "num-batches":2000, "meta-batch-size":20})
     if args.output_folder is not None:
         if not os.path.exists(args.output_folder): os.makedirs(args.output_folder)
         policy_filename = os.path.join(args.output_folder, 'policy.th')
@@ -65,13 +65,14 @@ def main(args):
         logs.update(tasks=tasks, num_iterations=num_iterations, train_returns=get_returns(train_episodes[0]), valid_returns=get_returns(valid_episodes))
         # Save policy
         old_step = step
-        step += train_episodes[0][0].lengths[0]
+        step += min(sum([np.mean(x.lengths) for x in train_episodes[0]]), 1000)
+        print(step)
         if old_step==0 or step//1000 > old_step//1000:
             rollouts = logs["valid_returns"][0]
             reward = np.mean(rollouts, -1)
             ep = step//1000
             total_rewards.append(reward)
-            string = f"Step: {1000*ep:7d}, Reward: {total_rewards[-1]:9.3f} [{np.std(rollouts):8.3f}], Avg: {np.mean(total_rewards, axis=0):9.3f} ({0.0:.3f}) <{get_time(start)}> ({{}})"
+            string = f"Step: {int(1000*ep):7d}, Reward: {total_rewards[-1]:9.3f} [{np.std(rollouts):8.3f}], Avg: {np.mean(total_rewards, axis=0):9.3f} ({0.0:.3f}) <{get_time(start)}> ({{}})"
             print(string)
             with open(log_path, "a+") as f:
                 f.write(f"{string}\n")
@@ -85,8 +86,9 @@ if __name__ == '__main__':
     misc = parser.add_argument_group('Miscellaneous')
     misc.add_argument('--output-folder', type=str, help='name of the output folder')
     misc.add_argument('--seed', type=int, default=None, help='random seed')
-    misc.add_argument('--num-workers', type=int, default=4, help='number of workers for trajectories sampling (default: {0})'.format(4))
+    misc.add_argument('--num-workers', type=int, default=8, help='number of workers for trajectories sampling (default: {0})'.format(4))
     misc.add_argument('--use-cuda', action='store_true', help='use cuda (default: false, use cpu). WARNING: Full upport for cuda is not guaranteed. Using CPU is encouraged.')
     args = parser.parse_args()
     args.device = ('cuda' if (torch.cuda.is_available() and args.use_cuda) else 'cpu')
     main(args)
+
