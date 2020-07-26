@@ -11,7 +11,7 @@
 
 # Initialize the module command first
 source ~/.bashrc
-source activate py377
+conda activate py377
 
 # export DISPLAY=':99.0'
 # Xvfb :99 -screen 0 1400x900x24 > /dev/null 2>&1 &
