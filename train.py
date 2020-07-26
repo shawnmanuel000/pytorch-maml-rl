@@ -26,7 +26,7 @@ def main(args):
     with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     if args.env_name in all_envs:
-        config.update({"env-name":args.env_name+"-v0", "env-kwargs":{}, "fast-batch-size":16, "num-batches":2000, "meta-batch-size":20})
+        config.update({"env-name":args.env_name+"-v0", "env-kwargs":{}, "fast-batch-size":16, "num-batches":2000, "meta-batch-size":1})
     if args.output_folder is not None:
         if not os.path.exists(args.output_folder): os.makedirs(args.output_folder)
         policy_filename = os.path.join(args.output_folder, 'policy.th')
@@ -65,8 +65,7 @@ def main(args):
         logs.update(tasks=tasks, num_iterations=num_iterations, train_returns=get_returns(train_episodes[0]), valid_returns=get_returns(valid_episodes))
         # Save policy
         old_step = step
-        step += min(sum([np.mean(x.lengths) for x in train_episodes[0]]), 1000)
-        print(step)
+        step += 250 if args.env_name in all_envs else train_episodes[0][0].lengths[0]
         if old_step==0 or step//1000 > old_step//1000:
             rollouts = logs["valid_returns"][0]
             reward = np.mean(rollouts, -1)
