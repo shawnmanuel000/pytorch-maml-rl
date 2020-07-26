@@ -72,7 +72,12 @@ class MujocoEnv(gym.Env, metaclass=EnvMeta):
     def step(self, action):
         self.sim.data.ctrl[:] = action
         for _ in range(self.frame_skip):
-            self.sim.step()
+            try:
+                self.sim.step()
+            except:
+                print("Sim error")
+                self.reset()
+                return self.step(action)
         state = self.observation()
         reward = self.task_reward()
         done = self.task_done()
