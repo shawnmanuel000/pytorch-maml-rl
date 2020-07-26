@@ -1,4 +1,6 @@
-from gym.envs.registration import register
+
+# from gym.envs.registration import register
+from .laser.Gym.gym.envs.registration import register
 
 # Bandit
 # ----------------------------------------

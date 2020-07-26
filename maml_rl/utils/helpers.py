@@ -1,4 +1,5 @@
-import gym
+from ..envs.laser.Gym import gym
+# import gym
 import torch
 
 from functools import reduce

@@ -1,4 +1,5 @@
-import gym
+from ..envs.laser.Gym import gym
+# import gym
 
 def make_env(env_name, env_kwargs={}, seed=None):
     def _make_env():
